@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const HistoricoSchema = new mongoose.Schema({
+const FornecedorSchema = new mongoose.Schema({
   idFornecedor: String,
   nomeFornecedor: String,
   quantidade: Number,
@@ -20,7 +20,7 @@ const ProdutoSchema = new mongoose.Schema({
   quantidadeMinima: Number,
   dataValidade: Date,
 
-  historico: [HistoricoSchema]
+  historico: [FornecedorSchema]
 });
 
 export default mongoose.model("Produto", ProdutoSchema);
