@@ -1,7 +1,35 @@
-function Header() {
+import { useLocation } from "react-router-dom";
+import { getRouteMeta } from "../config/navigation";
+
+function Header({ onMenuToggle }) {
+  const location = useLocation();
+  const routeMeta = getRouteMeta(location.pathname);
+
   return (
     <header className="header">
-      <h1>Sistema de Gestão</h1>
+      <div className="header-main">
+        <button
+          aria-label="Abrir menu lateral"
+          className="menu-toggle"
+          onClick={onMenuToggle}
+          type="button"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <div>
+          <p className="eyebrow">{routeMeta.eyebrow}</p>
+          <h2>{routeMeta.label}</h2>
+          <p className="header-copy">{routeMeta.description}</p>
+        </div>
+      </div>
+
+      <div className="header-badge">
+        <span>UI only</span>
+        <small>Responsivo</small>
+      </div>
     </header>
   );
 }
