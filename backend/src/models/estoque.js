@@ -10,7 +10,7 @@ const EstoqueSchema = new mongoose.Schema({
   fornecedor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Fornecedor"
-    // só usado na ENTRADA
+    // usado apenas na entrada
   },
 
   tipo: {
@@ -21,10 +21,19 @@ const EstoqueSchema = new mongoose.Schema({
 
   quantidade: {
     type: Number,
-    required: true
+    required: true,
+    min: 1
   },
 
-  valorUnitario: Number,
+  valorUnitario: {
+    type: Number,
+    min: 0
+  },
+
+  valorTotal: {
+    type: Number,
+    min: 0
+  },
 
   data: {
     type: Date,

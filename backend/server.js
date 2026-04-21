@@ -1,17 +1,13 @@
-import express from 'express';
 import dotenv from 'dotenv';
-import {connectDB} from './src/config/database.js'
+import app from './src/app.js';
+import { connectDB } from './src/config/database.js';
 
-dotenv.config()
+dotenv.config({ path: "./.env" });
+
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 connectDB();
 
-const server = express();
-
-server.get('/menu', (req,res)=>{
-    res.send('Bem vindo')
-})
-
-server.listen(3000,()=>{
-    console.log('Servidor rodando')
-})
+app.listen(3000, () => {
+    console.log('Servidor rodando');
+});

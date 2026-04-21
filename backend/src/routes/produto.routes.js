@@ -1,26 +1,30 @@
-
-import  Router  from "express";
-import produtoController from "../controllers/produto.controller.js";
+import { Router } from "express";
+import produtoController from "../controlers/produto.controler.js";
 
 const router = Router();
 
-// Criar produto
-router.post("/produtos", (req, res) =>
+//criar produto
+router.post("/", (req, res) =>
   produtoController.criarProduto(req, res)
 );
 
-// Listar todos
-router.get("/listaProdutos", (req, res) =>
-  produtoController.listarProduto(req, res)
+// Listar todos os produtos
+router.get("/", (req, res) =>
+  produtoController.listarProdutos(req, res)
 );
 
-// Atualizar
-router.put("/produtos/:id", (req, res) =>
+// Buscar produto por ID
+router.get("/:id", (req, res) =>
+  produtoController.buscarProduto(req, res)
+);
+
+// Atualizar produto
+router.put("/:id", (req, res) =>
   produtoController.atualizarProduto(req, res)
 );
 
-// Deletar
-router.delete("/produtos/:id", (req, res) =>
+// Deletar produto
+router.delete("/:id", (req, res) =>
   produtoController.deletarProduto(req, res)
 );
 
