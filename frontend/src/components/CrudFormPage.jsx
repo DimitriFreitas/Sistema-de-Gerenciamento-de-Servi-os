@@ -4,22 +4,28 @@ import { getInitialFormValues } from "../data/moduleConfigs";
 import { api } from "../lib/api";
 import ModuleActionNav from "./ModuleActionNav";
 
-function renderField(field, value, onChange) {
+function renderField(field, value, onChange, onBlur, hasError) {
+  const inputProps = {
+    "aria-invalid": hasError ? "true" : "false",
+    name: field.name,
+    onBlur,
+    onChange,
+    value,
+  };
+
   if (field.type === "textarea") {
     return (
       <textarea
-        name={field.name}
-        onChange={onChange}
+        {...inputProps}
         placeholder={field.placeholder}
         rows={4}
-        value={value}
       />
     );
   }
 
   if (field.type === "select") {
     return (
-      <select name={field.name} onChange={onChange} value={value}>
+      <select {...inputProps}>
         {field.options.map((option) => (
           <option key={option}>{option}</option>
         ))}
@@ -29,15 +35,21 @@ function renderField(field, value, onChange) {
 
   return (
     <input
+      {...inputProps}
       max={field.max}
       min={field.min}
-      name={field.name}
-      onChange={onChange}
       placeholder={field.placeholder}
       step={field.step}
       type={field.type || "text"}
-      value={value}
     />
+  );
+}
+
+function validateFields(fields, values) {
+  return Object.fromEntries(
+    fields
+      .map((field) => [field.name, field.validate?.(values[field.name]) || ""])
+      .filter(([, error]) => Boolean(error))
   );
 }
 
@@ -57,11 +69,16 @@ function CrudFormPage({ moduleConfig, mode }) {
     status: "idle",
     error: "",
   });
+  const [touchedFields, setTouchedFields] = useState({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const fieldErrors = validateFields(config.fields, formValues);
 
   useEffect(() => {
     if (mode === "create") {
       setFormValues(getInitialFormValues(config.fields));
       setRequestState({ status: "idle", error: "" });
+      setTouchedFields({});
+      setFormSubmitted(false);
       return;
     }
 
@@ -104,15 +121,35 @@ function CrudFormPage({ moduleConfig, mode }) {
 
   function handleChange(event) {
     const { name, value } = event.target;
+    const field = config.fields.find((currentField) => currentField.name === name);
+    const nextValue = field?.formatInput ? field.formatInput(value) : value;
 
     setFormValues((current) => ({
       ...current,
-      [name]: value,
+      [name]: nextValue,
+    }));
+    setSubmitState((current) =>
+      current.status === "error" ? { status: "idle", error: "" } : current
+    );
+  }
+
+  function handleBlur(event) {
+    const { name } = event.target;
+
+    setTouchedFields((current) => ({
+      ...current,
+      [name]: true,
     }));
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setFormSubmitted(true);
+
+    if (Object.keys(fieldErrors).length) {
+      setSubmitState({ status: "idle", error: "" });
+      return;
+    }
 
     try {
       setSubmitState({ status: "saving", error: "" });
@@ -159,12 +196,30 @@ function CrudFormPage({ moduleConfig, mode }) {
           {submitState.error ? <div className="alert alert--danger">{submitState.error}</div> : null}
 
           <div className="form-grid">
-            {config.fields.map((field) => (
-              <label className={`field${field.fullWidth ? " field--full" : ""}`} key={field.label}>
-                <span>{field.label}</span>
-                {renderField(field, formValues[field.name] ?? "", handleChange)}
-              </label>
-            ))}
+            {config.fields.map((field) => {
+              const shouldShowError = Boolean(
+                fieldErrors[field.name] && (touchedFields[field.name] || formSubmitted)
+              );
+
+              return (
+                <label
+                  className={`field${field.fullWidth ? " field--full" : ""}${shouldShowError ? " field--invalid" : ""}`}
+                  key={field.label}
+                >
+                  <span>{field.label}</span>
+                  {renderField(
+                    field,
+                    formValues[field.name] ?? "",
+                    handleChange,
+                    handleBlur,
+                    shouldShowError
+                  )}
+                  {shouldShowError ? (
+                    <small className="field-error">{fieldErrors[field.name]}</small>
+                  ) : null}
+                </label>
+              );
+            })}
           </div>
 
           {config.sideNotes?.length ? (

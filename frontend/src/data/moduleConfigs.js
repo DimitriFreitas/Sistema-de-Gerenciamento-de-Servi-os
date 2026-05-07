@@ -1,3 +1,11 @@
+import {
+  formatCpfCnpj,
+  formatPhone,
+  isValidCpfCnpj,
+  isValidPhone,
+  onlyDigits,
+} from "../lib/formatters";
+
 function formatCurrency(value) {
   const amount = Number(value);
 
@@ -58,8 +66,8 @@ function buildClientPayload(values) {
   return {
     nome: values.nome.trim(),
     email: values.email.trim(),
-    telefone: values.telefone.trim(),
-    cpf_cnpj: values.cpf_cnpj.trim(),
+    telefone: formatPhone(values.telefone),
+    cpf_cnpj: formatCpfCnpj(values.cpf_cnpj),
     status: normalizeText(values.status) === "inativo" ? "inativo" : "ativo",
   };
 }
@@ -73,11 +81,78 @@ function buildProductPayload(values) {
     quantidadeAtual: values.quantidadeAtual === "" ? 0 : Number(values.quantidadeAtual),
     quantidadeMinima: values.quantidadeMinima === "" ? undefined : Number(values.quantidadeMinima),
     dataValidade: values.dataValidade || undefined,
+    status: normalizeText(values.status) === "inativo" ? "inativo" : "ativo",
   };
 
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== undefined)
   );
+}
+
+function requiredMessage(label) {
+  return `${label} e obrigatorio.`;
+}
+
+function validateRequired(value, label) {
+  return String(value ?? "").trim() ? "" : requiredMessage(label);
+}
+
+function validateEmail(value) {
+  const trimmedValue = String(value ?? "").trim();
+
+  if (!trimmedValue) {
+    return requiredMessage("E-mail");
+  }
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)
+    ? ""
+    : "Informe um e-mail valido.";
+}
+
+function validateCpfCnpj(value) {
+  const digits = String(value ?? "").replaceAll(/\D/g, "");
+
+  if (!digits) {
+    return requiredMessage("CPF ou CNPJ");
+  }
+
+  if (digits.length !== 11 && digits.length !== 14) {
+    return "Informe 11 digitos para CPF ou 14 digitos para CNPJ.";
+  }
+
+  return isValidCpfCnpj(value) ? "" : "CPF ou CNPJ invalido.";
+}
+
+function validatePhone(value) {
+  if (!String(value ?? "").trim()) {
+    return "";
+  }
+
+  return isValidPhone(value) ? "" : "Informe um telefone com DDD e 10 ou 11 digitos.";
+}
+
+function validateNonNegativeNumber(value, label, { required = false } = {}) {
+  if (value === "" || value === null || value === undefined) {
+    return required ? requiredMessage(label) : "";
+  }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return `${label} deve ser um numero valido.`;
+  }
+
+  return number >= 0 ? "" : `${label} nao pode ser negativo.`;
+}
+
+function validateProductDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  const parsedDate = new Date(value);
+
+  return Number.isNaN(parsedDate.getTime()) ? "Informe uma data valida." : "";
 }
 
 export const moduleConfigs = {
@@ -157,12 +232,12 @@ export const moduleConfigs = {
         },
         {
           label: "CPF / CNPJ",
-          render: (record) => record.cpf_cnpj || "Nao informado",
+          render: (record) => formatCpfCnpj(record.cpf_cnpj) || "Nao informado",
           sortValue: (record) => record.cpf_cnpj || "",
         },
         {
           label: "Telefone",
-          render: (record) => record.telefone || "Nao informado",
+          render: (record) => formatPhone(record.telefone) || "Nao informado",
           sortValue: (record) => record.telefone || "",
         },
         {
@@ -180,7 +255,7 @@ export const moduleConfigs = {
 
         return (
           normalizeText(record.nome).includes(normalizeText(filters.nome)) &&
-          normalizeText(record.cpf_cnpj).includes(normalizeText(filters.cpf_cnpj)) &&
+          onlyDigits(record.cpf_cnpj).includes(onlyDigits(filters.cpf_cnpj)) &&
           (filters.status === "Todos" || status === filters.status)
         );
       },
@@ -196,7 +271,7 @@ export const moduleConfigs = {
 
           return [
             { label: "Cliente", value: record.nome || "Nao informado" },
-            { label: "Documento", value: record.cpf_cnpj || "Nao informado" },
+            { label: "Documento", value: formatCpfCnpj(record.cpf_cnpj) || "Nao informado" },
             { label: "E-mail", value: record.email || "Nao informado" },
             { label: "Status", value: normalizeClientStatus(record.status) },
           ];
@@ -211,10 +286,10 @@ export const moduleConfigs = {
         "Após salvar, a listagem pode ser consultada imediatamente.",
       ],
       fields: [
-        { name: "nome", label: "Nome", placeholder: "Informe o nome do cliente" },
-        { name: "cpf_cnpj", label: "CPF / CNPJ", placeholder: "000.000.000-00 ou 00.000.000/0000-00" },
-        { name: "email", label: "E-mail", type: "email", placeholder: "cliente@empresa.com" },
-        { name: "telefone", label: "Telefone", placeholder: "(00) 00000-0000" },
+        { name: "nome", label: "Nome", placeholder: "Informe o nome do cliente", validate: (value) => validateRequired(value, "Nome") },
+        { name: "cpf_cnpj", label: "CPF / CNPJ", placeholder: "000.000.000-00 ou 00.000.000/0000-00", formatInput: formatCpfCnpj, validate: validateCpfCnpj },
+        { name: "email", label: "E-mail", type: "email", placeholder: "cliente@empresa.com", validate: validateEmail },
+        { name: "telefone", label: "Telefone", placeholder: "(00) 00000-0000", formatInput: formatPhone, validate: validatePhone },
       ],
       submitLabel: "Salvar cliente",
       successMessage: "Cliente cadastrado com sucesso.",
@@ -236,16 +311,17 @@ export const moduleConfigs = {
       alert:
         "Selecione um cliente na consulta para abrir a edicao com o registro correto.",
       fields: [
-        { name: "nome", label: "Nome", placeholder: "Informe o nome do cliente" },
-        { name: "cpf_cnpj", label: "CPF / CNPJ", placeholder: "000.000.000-00 ou 00.000.000/0000-00" },
-        { name: "email", label: "E-mail", type: "email", placeholder: "cliente@empresa.com" },
-        { name: "telefone", label: "Telefone", placeholder: "(00) 00000-0000" },
+        { name: "nome", label: "Nome", placeholder: "Informe o nome do cliente", validate: (value) => validateRequired(value, "Nome") },
+        { name: "cpf_cnpj", label: "CPF / CNPJ", placeholder: "000.000.000-00 ou 00.000.000/0000-00", formatInput: formatCpfCnpj, validate: validateCpfCnpj },
+        { name: "email", label: "E-mail", type: "email", placeholder: "cliente@empresa.com", validate: validateEmail },
+        { name: "telefone", label: "Telefone", placeholder: "(00) 00000-0000", formatInput: formatPhone, validate: validatePhone },
         {
           name: "status",
           label: "Status",
           type: "select",
           options: ["Ativo", "Inativo"],
           defaultValue: "Ativo",
+          formatInput: normalizeClientStatus,
         },
       ],
       submitLabel: "Salvar alteracoes",
@@ -275,7 +351,7 @@ export const moduleConfigs = {
 
         return [
           { label: "Cliente", value: record.nome || "Nao informado" },
-          { label: "Documento", value: record.cpf_cnpj || "Nao informado" },
+          { label: "Documento", value: formatCpfCnpj(record.cpf_cnpj) || "Nao informado" },
           { label: "E-mail", value: record.email || "Nao informado" },
           { label: "Status atual", value: normalizeClientStatus(record.status) },
         ];
@@ -297,7 +373,7 @@ export const moduleConfigs = {
     basePath: "/produtos",
     contextLabel: "Estoque e cadastro",
     summary:
-      "Modulo de produtos com consulta, cadastro, edicao e remocao integrados ao backend.",
+      "Modulo de produtos com consulta, cadastro, edicao e inativacao integrados ao backend.",
     routeMeta: {
       base: {
         eyebrow: "Modulo",
@@ -322,7 +398,7 @@ export const moduleConfigs = {
       deactivate: {
         eyebrow: "Inativacao",
         label: "Inativar produto",
-        description: "Remocao do produto selecionado no cadastro atual.",
+        description: "Atualizacao do status do produto selecionado.",
       },
     },
     actions: [
@@ -349,7 +425,7 @@ export const moduleConfigs = {
       {
         label: "Inativar produto",
         path: "/produtos/inativar",
-        description: "Remocao do produto selecionado no cadastro atual.",
+        description: "Atualizacao do status do produto selecionado.",
       },
     ],
     list: {
@@ -365,6 +441,13 @@ export const moduleConfigs = {
           label: "Estoque",
           type: "select",
           options: ["Todos", "Disponivel", "Abaixo do minimo", "Sem estoque"],
+          defaultValue: "Todos",
+        },
+        {
+          name: "status",
+          label: "Status",
+          type: "select",
+          options: ["Todos", "Ativo", "Inativo"],
           defaultValue: "Todos",
         },
       ],
@@ -394,6 +477,15 @@ export const moduleConfigs = {
           render: (record) => formatCurrency(record.custo),
           sortValue: (record) => Number(record.custo ?? 0),
         },
+        {
+          label: "Status",
+          type: "status",
+          sortValue: (record) => normalizeClientStatus(record.status),
+          render: (record) => ({
+            text: normalizeClientStatus(record.status),
+            tone: getClientStatusTone(record.status),
+          }),
+        },
       ],
       matchesFilters(record, filters) {
         const currentAmount = Number(record.quantidadeAtual ?? 0);
@@ -404,18 +496,20 @@ export const moduleConfigs = {
             : minimumAmount > 0 && currentAmount <= minimumAmount
               ? "Abaixo do minimo"
               : "Disponivel";
+        const status = normalizeClientStatus(record.status);
 
         return (
           normalizeText(record.nome).includes(normalizeText(filters.nome)) &&
           normalizeText(record.descricao).includes(normalizeText(filters.descricao)) &&
-          (filters.estoque === "Todos" || stockState === filters.estoque)
+          (filters.estoque === "Todos" || stockState === filters.estoque) &&
+          (filters.status === "Todos" || status === filters.status)
         );
       },
       detailCard: {
         title: "Detalhes do produto",
         description:
-          "Os dados abaixo sao carregados da API de produtos para apoiar consulta, edicao e exclusao do item.",
-        tabs: ["Cadastro", "Estoque", "Valores"],
+          "Os dados abaixo sao carregados da API de produtos para apoiar consulta, edicao e atualizacao de status.",
+        tabs: ["Cadastro", "Estoque", "Status"],
         facts(record) {
           if (!record) {
             return [];
@@ -426,6 +520,7 @@ export const moduleConfigs = {
             { label: "Descricao", value: record.descricao || "Nao informado" },
             { label: "Estoque atual", value: String(record.quantidadeAtual ?? 0) },
             { label: "Validade", value: formatDate(record.dataValidade) },
+            { label: "Status", value: normalizeClientStatus(record.status) },
           ];
         },
       },
@@ -440,19 +535,28 @@ export const moduleConfigs = {
         "A data de validade e opcional.",
       ],
       fields: [
-        { name: "nome", label: "Nome do produto", placeholder: "Ex.: Disjuntor Tripolar" },
+        { name: "nome", label: "Nome do produto", placeholder: "Ex.: Disjuntor Tripolar", validate: (value) => validateRequired(value, "Nome do produto") },
         {
           name: "descricao",
           label: "Descricao",
           type: "textarea",
           placeholder: "Descreva o produto cadastrado",
           fullWidth: true,
+          validate: (value) => validateRequired(value, "Descricao"),
         },
-        { name: "quantidadeAtual", label: "Quantidade atual", type: "number", placeholder: "0", min: 0 },
-        { name: "quantidadeMinima", label: "Quantidade minima", type: "number", placeholder: "0", min: 0 },
-        { name: "custo", label: "Custo", type: "number", placeholder: "0.00", min: 0, step: "0.01" },
-        { name: "preco", label: "Preco", type: "number", placeholder: "0.00", min: 0, step: "0.01" },
-        { name: "dataValidade", label: "Data de validade", type: "date" },
+        { name: "quantidadeAtual", label: "Quantidade atual", type: "number", placeholder: "0", min: 0, validate: (value) => validateNonNegativeNumber(value, "Quantidade atual") },
+        { name: "quantidadeMinima", label: "Quantidade minima", type: "number", placeholder: "0", min: 0, validate: (value) => validateNonNegativeNumber(value, "Quantidade minima") },
+        { name: "custo", label: "Custo", type: "number", placeholder: "0.00", min: 0, step: "0.01", validate: (value) => validateNonNegativeNumber(value, "Custo") },
+        { name: "preco", label: "Preco", type: "number", placeholder: "0.00", min: 0, step: "0.01", validate: (value) => validateNonNegativeNumber(value, "Preco") },
+        { name: "dataValidade", label: "Data de validade", type: "date", validate: validateProductDate },
+        {
+          name: "status",
+          label: "Status",
+          type: "select",
+          options: ["Ativo", "Inativo"],
+          defaultValue: "Ativo",
+          formatInput: normalizeClientStatus,
+        },
       ],
       submitLabel: "Salvar produto",
       successMessage: "Produto cadastrado com sucesso.",
@@ -474,19 +578,28 @@ export const moduleConfigs = {
       alert:
         "Selecione um produto na consulta para abrir a edicao com o registro correto.",
       fields: [
-        { name: "nome", label: "Nome do produto", placeholder: "Ex.: Disjuntor Tripolar" },
+        { name: "nome", label: "Nome do produto", placeholder: "Ex.: Disjuntor Tripolar", validate: (value) => validateRequired(value, "Nome do produto") },
         {
           name: "descricao",
           label: "Descricao",
           type: "textarea",
           placeholder: "Descreva o produto cadastrado",
           fullWidth: true,
+          validate: (value) => validateRequired(value, "Descricao"),
         },
-        { name: "quantidadeAtual", label: "Quantidade atual", type: "number", placeholder: "0", min: 0 },
-        { name: "quantidadeMinima", label: "Quantidade minima", type: "number", placeholder: "0", min: 0 },
-        { name: "custo", label: "Custo", type: "number", placeholder: "0.00", min: 0, step: "0.01" },
-        { name: "preco", label: "Preco", type: "number", placeholder: "0.00", min: 0, step: "0.01" },
-        { name: "dataValidade", label: "Data de validade", type: "date" },
+        { name: "quantidadeAtual", label: "Quantidade atual", type: "number", placeholder: "0", min: 0, validate: (value) => validateNonNegativeNumber(value, "Quantidade atual") },
+        { name: "quantidadeMinima", label: "Quantidade minima", type: "number", placeholder: "0", min: 0, validate: (value) => validateNonNegativeNumber(value, "Quantidade minima") },
+        { name: "custo", label: "Custo", type: "number", placeholder: "0.00", min: 0, step: "0.01", validate: (value) => validateNonNegativeNumber(value, "Custo") },
+        { name: "preco", label: "Preco", type: "number", placeholder: "0.00", min: 0, step: "0.01", validate: (value) => validateNonNegativeNumber(value, "Preco") },
+        { name: "dataValidade", label: "Data de validade", type: "date", validate: validateProductDate },
+        {
+          name: "status",
+          label: "Status",
+          type: "select",
+          options: ["Ativo", "Inativo"],
+          defaultValue: "Ativo",
+          formatInput: normalizeClientStatus,
+        },
       ],
       extraPanel: {
         title: "Resumo do cadastro",
@@ -507,15 +620,15 @@ export const moduleConfigs = {
     deactivate: {
       heroTitle: "Inativar produto",
       heroDescription:
-        "No backend atual, a inativacao do produto e tratada como remocao do cadastro selecionado.",
+        "A inativacao atualiza o status do produto para inativo sem remover o cadastro do banco.",
       warning:
-        "Revise os dados do produto antes de confirmar. A acao remove o item do backend atual.",
+        "Revise os dados do produto antes de confirmar. A alteracao sera persistida imediatamente na API.",
       optionalField: {
         label: "Observacao da inativacao",
-        placeholder: "Registre uma observacao interna antes de remover o produto.",
+        placeholder: "Registre uma observacao interna antes de inativar o produto.",
       },
       actionButtons: [{ label: "Confirmar inativacao", variant: "danger", action: "confirm" }],
-      successMessage: "Produto removido com sucesso.",
+      successMessage: "Produto inativado com sucesso.",
       facts(record) {
         if (!record) {
           return [];
@@ -526,9 +639,16 @@ export const moduleConfigs = {
           { label: "Descricao", value: record.descricao || "Nao informado" },
           { label: "Estoque atual", value: String(record.quantidadeAtual ?? 0) },
           { label: "Validade", value: formatDate(record.dataValidade) },
+          { label: "Status atual", value: normalizeClientStatus(record.status) },
         ];
       },
-      asyncAction: "delete",
+      asyncAction: "update",
+      buildPayload(record) {
+        return {
+          ...record,
+          status: "inativo",
+        };
+      },
     },
   },
 };
@@ -543,7 +663,9 @@ export function getInitialFormValues(fields, record = {}) {
       }
 
       if (record[field.name] !== undefined && record[field.name] !== null) {
-        return [field.name, String(record[field.name])];
+        const value = String(record[field.name]);
+
+        return [field.name, field.formatInput ? field.formatInput(value) : value];
       }
 
       return [field.name, field.defaultValue || ""];

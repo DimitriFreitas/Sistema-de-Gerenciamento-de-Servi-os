@@ -22,7 +22,7 @@ O frontend oferece uma interface navegável para:
 - cadastrar novos clientes e produtos;
 - editar registros existentes;
 - inativar clientes;
-- remover produtos pelo fluxo de inativação do módulo.
+- inativar produtos sem remover o cadastro do banco.
 
 ## Estrutura
 

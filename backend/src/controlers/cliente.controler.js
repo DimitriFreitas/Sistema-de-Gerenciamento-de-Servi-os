@@ -1,4 +1,5 @@
 import Cliente from "../models/cliente.js";
+import { getRequestErrorResponse } from "../utils/errors.js";
 
 class ClienteController {
 
@@ -7,7 +8,8 @@ class ClienteController {
       const cliente = await Cliente.create(req.body);
       return res.status(201).json(cliente);
     } catch (erro) {
-      return res.status(500).json({ mensagem: erro.message });
+      const response = getRequestErrorResponse(erro, "Erro ao criar cliente");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -16,7 +18,8 @@ class ClienteController {
       const clientes = await Cliente.find();
       return res.status(200).json(clientes);
     } catch (erro) {
-      return res.status(500).json({ mensagem: erro.message });
+      const response = getRequestErrorResponse(erro, "Erro ao listar clientes");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -30,7 +33,8 @@ class ClienteController {
 
       return res.status(200).json(cliente);
     } catch (erro) {
-      return res.status(500).json({ mensagem: erro.message });
+      const response = getRequestErrorResponse(erro, "Erro ao buscar cliente");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -38,10 +42,17 @@ class ClienteController {
     try {
       const cliente = await Cliente.findByIdAndUpdate(req.params.id, req.body, {
         returnDocument: "after",
+        runValidators: true,
       });
+
+      if (!cliente) {
+        return res.status(404).json({ mensagem: "Cliente não encontrado" });
+      }
+
       return res.status(200).json(cliente);
     } catch (erro) {
-      return res.status(500).json({ mensagem: erro.message });
+      const response = getRequestErrorResponse(erro, "Erro ao atualizar cliente");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -50,7 +61,8 @@ class ClienteController {
       await Cliente.findByIdAndDelete(req.params.id);
       return res.status(200).json({ mensagem: "Cliente removido com sucesso" });
     } catch (erro) {
-      return res.status(500).json({ mensagem: erro.message });
+      const response = getRequestErrorResponse(erro, "Erro ao remover cliente");
+      return res.status(response.status).json(response.body);
     }
   }
 }

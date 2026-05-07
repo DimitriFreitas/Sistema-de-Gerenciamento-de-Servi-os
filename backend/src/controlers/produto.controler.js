@@ -1,4 +1,5 @@
 import Produto from "../models/produto.js";
+import { getRequestErrorResponse } from "../utils/errors.js";
 
 class ProdutoController {
 
@@ -8,8 +9,8 @@ class ProdutoController {
       const produto = await Produto.create(req.body);
       return res.status(201).json(produto);
     } catch (erro) {
-      console.error(erro);
-      return res.status(500).json({ erro: "Erro ao criar produto" });
+      const response = getRequestErrorResponse(erro, "Erro ao criar produto");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -19,8 +20,8 @@ class ProdutoController {
       const produtos = await Produto.find();
       return res.status(200).json(produtos);
     } catch (erro) {
-      console.error(erro);
-      return res.status(500).json({ erro: "Erro ao listar produtos" });
+      const response = getRequestErrorResponse(erro, "Erro ao listar produtos");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -37,8 +38,8 @@ class ProdutoController {
 
       return res.status(200).json(produto);
     } catch (erro) {
-      console.error(erro);
-      return res.status(500).json({ erro: "Erro ao buscar produto" });
+      const response = getRequestErrorResponse(erro, "Erro ao buscar produto");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -50,7 +51,7 @@ class ProdutoController {
       const produto = await Produto.findByIdAndUpdate(
         id,
         req.body,
-        { returnDocument: "after" }
+        { returnDocument: "after", runValidators: true }
       );
 
       if (!produto) {
@@ -59,8 +60,8 @@ class ProdutoController {
 
       return res.status(200).json(produto);
     } catch (erro) {
-      console.error(erro);
-      return res.status(500).json({ erro: "Erro ao atualizar produto" });
+      const response = getRequestErrorResponse(erro, "Erro ao atualizar produto");
+      return res.status(response.status).json(response.body);
     }
   }
 
@@ -77,8 +78,8 @@ class ProdutoController {
 
       return res.status(200).json({ mensagem: "Produto deletado com sucesso" });
     } catch (erro) {
-      console.error(erro);
-      return res.status(500).json({ erro: "Erro ao deletar produto" });
+      const response = getRequestErrorResponse(erro, "Erro ao deletar produto");
+      return res.status(response.status).json(response.body);
     }
   }
 }

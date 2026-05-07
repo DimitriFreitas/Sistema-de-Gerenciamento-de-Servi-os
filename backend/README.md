@@ -141,6 +141,7 @@ Campos usados pelo módulo:
 - `quantidadeAtual`
 - `quantidadeMinima`
 - `dataValidade`
+- `status`
 
 ## Integração com o frontend
 

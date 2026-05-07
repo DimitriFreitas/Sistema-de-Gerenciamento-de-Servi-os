@@ -16,7 +16,7 @@ O projeto foi desenvolvido em grupo utilizando Scrum, com divisão de entregas p
 ## Funcionalidades
 
 - Cadastro, consulta, edição e inativação de clientes.
-- Cadastro, consulta, edição e remoção de produtos.
+- Cadastro, consulta, edição e inativação de produtos.
 - Listagens com filtros e ordenação por coluna.
 - Painel lateral de detalhes do registro selecionado.
 - Comunicação entre frontend e backend por API HTTP.

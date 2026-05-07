@@ -31,11 +31,13 @@
 html,
 body,
 #root {
+  width: 100%;
   min-height: 100%;
 }
 
 body {
   margin: 0;
+  overflow-x: hidden;
 }
 
 button,
@@ -56,13 +58,19 @@ button {
 }
 
 .app-shell {
+  width: 100%;
+  max-width: 100vw;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
+  overflow-x: hidden;
 }
 
 .app-main {
+  width: 100%;
+  max-width: 100vw;
   min-width: 0;
+  overflow-x: hidden;
   padding: 24px;
 }
 
@@ -157,6 +165,9 @@ button {
 }
 
 .header {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -173,7 +184,13 @@ button {
 .header-main {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: 16px;
+}
+
+.header-main > div,
+.section-heading > div {
+  min-width: 0;
 }
 
 .header h2,
@@ -225,25 +242,38 @@ button {
 }
 
 .content-area {
+  width: 100%;
+  max-width: 100%;
   display: grid;
+  min-width: 0;
   gap: 24px;
 }
 
 .page-stack {
+  width: 100%;
+  max-width: 100%;
   display: grid;
+  min-width: 0;
   gap: 24px;
 }
 
 .hero-grid,
 .content-grid,
+.list-workspace-grid,
 .form-layout {
   display: grid;
+  align-items: start;
+  min-width: 0;
   gap: 24px;
 }
 
 .hero-grid,
 .content-grid {
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+}
+
+.list-workspace-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.36fr);
 }
 
 .hero-grid--single,
@@ -292,6 +322,9 @@ button {
 }
 
 .surface-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 24px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.74);
@@ -303,6 +336,8 @@ button {
 }
 
 .section-heading {
+  width: 100%;
+  min-width: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -314,6 +349,7 @@ button {
 .button-group {
   display: flex;
   flex-wrap: wrap;
+  min-width: 0;
   gap: 12px;
 }
 
@@ -321,10 +357,15 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  max-width: 100%;
+  min-width: 0;
   min-height: 48px;
   padding: 0 18px;
   border-radius: 14px;
   font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
   transition:
     transform 160ms ease,
     opacity 160ms ease,
@@ -427,13 +468,18 @@ button {
 .module-subnav {
   display: flex;
   flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
   gap: 10px;
 }
 
 .module-subnav-link {
   display: inline-flex;
+  flex: 0 1 auto;
   align-items: center;
   justify-content: center;
+  max-width: 100%;
+  min-width: 0;
   min-height: 42px;
   padding: 0 16px;
   border-radius: 999px;
@@ -463,11 +509,12 @@ button {
 .form-grid,
 .facts-grid {
   display: grid;
+  min-width: 0;
   gap: 16px;
 }
 
 .filter-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .form-grid {
@@ -484,6 +531,7 @@ button {
 
 .field {
   display: grid;
+  min-width: 0;
   gap: 8px;
 }
 
@@ -500,6 +548,7 @@ button {
 .field select,
 .field textarea {
   width: 100%;
+  min-width: 0;
   padding: 14px 16px;
   color: var(--accent-deep);
   background: rgba(245, 247, 248, 0.92);
@@ -518,6 +567,26 @@ button {
   border-color: rgba(31, 124, 255, 0.44);
   box-shadow: 0 0 0 4px rgba(31, 124, 255, 0.12);
   background: #ffffff;
+}
+
+.field--invalid input,
+.field--invalid select,
+.field--invalid textarea {
+  border-color: rgba(217, 83, 97, 0.64);
+}
+
+.field--invalid input:focus,
+.field--invalid select:focus,
+.field--invalid textarea:focus {
+  border-color: rgba(217, 83, 97, 0.72);
+  box-shadow: 0 0 0 4px rgba(217, 83, 97, 0.08);
+}
+
+.field-error {
+  color: #8f2332;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
 .field textarea {
@@ -569,7 +638,11 @@ button {
 }
 
 .table-scroll {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  contain: inline-size;
 }
 
 .data-table {
@@ -723,16 +796,16 @@ button {
 @media (max-width: 1180px) {
   .hero-grid,
   .content-grid,
+  .list-workspace-grid,
   .form-layout,
   .module-grid,
-  .filter-grid,
   .form-grid,
   .facts-grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1080px) {
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -747,7 +820,13 @@ button {
 
   .sidebar {
     position: fixed;
+    inset: 0 auto 0 0;
     left: 0;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
     transform: translateX(-100%);
     width: min(86vw, 320px);
     transition: transform 180ms ease;
@@ -780,11 +859,60 @@ button {
 }
 
 @media (max-width: 640px) {
+  .sidebar {
+    width: min(86vw, 420px);
+  }
+
   .header,
   .surface-card,
   .hero-panel,
   .form-side-panel {
     border-radius: 20px;
+  }
+
+  .app-main {
+    padding: 12px;
+  }
+
+  .content-area,
+  .page-stack {
+    gap: 16px;
+  }
+
+  .header,
+  .surface-card {
+    padding: 18px;
+  }
+
+  .section-heading {
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .surface-card--flush {
+    padding: 18px;
+  }
+
+  .module-nav-shell {
+    padding: 12px;
+    overflow: hidden;
+  }
+
+  .module-subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .module-subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .module-subnav-link {
+    flex: 0 0 auto;
+    min-width: max-content;
+    padding: 0 16px;
   }
 
   .header h2 {
@@ -813,5 +941,13 @@ button {
 
   .button-group .button {
     flex: 1 1 100%;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .data-table {
+    min-width: 720px;
   }
 }
