@@ -63,6 +63,10 @@ button {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
+  background:
+    linear-gradient(180deg, rgba(143, 200, 202, 0.96), rgba(119, 184, 187, 0.96)) left top /
+      320px 100vh no-repeat,
+    linear-gradient(#78b9bc, #78b9bc) left top / 320px 100% no-repeat;
   overflow-x: hidden;
 }
 
@@ -807,6 +811,7 @@ button {
 
 @media (max-width: 1080px) {
   .app-shell {
+    background: transparent;
     grid-template-columns: 1fr;
   }
 
