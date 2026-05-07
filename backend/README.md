@@ -98,6 +98,8 @@ http://localhost:3000
 
 ## Endpoints
 
+A interface web usa atualização de `status` para inativar clientes e produtos. Os endpoints `DELETE` abaixo permanecem disponíveis como remoção direta pela API.
+
 ### Clientes
 
 ```text

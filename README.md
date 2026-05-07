@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Serviços
 
-Projeto acadêmico fullstack para gerenciamento de clientes e produtos em um contexto de serviços em motores elétricos. A aplicação permite consultar, cadastrar, editar e inativar/remover registros por meio de uma interface web integrada a uma API Node.js com MongoDB.
+Projeto acadêmico fullstack para gerenciamento de clientes e produtos em um contexto de serviços em motores elétricos. A aplicação permite consultar, cadastrar, editar e inativar registros pela interface web integrada a uma API Node.js com MongoDB.
 
 ## Equipe
 
@@ -180,3 +180,4 @@ npm --prefix frontend run dev
 
 - `node_modules/`, `dist/`, `.env`, `.codex/` e `.omx/` são arquivos ou pastas locais e não devem ser versionados.
 - O backend depende de `backend/.env`; sem `MONGO_URI`, o servidor não inicia.
+- A interface inativa registros atualizando o campo `status`; os endpoints `DELETE` da API continuam disponíveis como remoção direta.

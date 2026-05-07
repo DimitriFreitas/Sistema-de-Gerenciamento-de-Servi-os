@@ -34,7 +34,7 @@ frontend/
 │   ├── config/             # Metadados de navegação
 │   ├── data/               # Configuração dos módulos de clientes e produtos
 │   ├── layouts/            # Estrutura principal da aplicação
-│   ├── lib/                # Cliente HTTP para comunicação com a API
+│   ├── lib/                # Cliente HTTP, formatadores e validações auxiliares
 │   ├── pages/              # Página inicial
 │   ├── routes/             # Rotas da aplicação
 │   ├── App.jsx             # Componente principal
@@ -74,7 +74,7 @@ Esse padrão permite reaproveitar os mesmos componentes CRUD para módulos difer
 - `CrudModulePage.jsx`: tela inicial de um módulo.
 - `CrudListPage.jsx`: listagem com filtros, ordenação e painel de detalhes.
 - `CrudFormPage.jsx`: cadastro e edição.
-- `CrudDeactivatePage.jsx`: confirmação de inativação ou remoção.
+- `CrudDeactivatePage.jsx`: confirmação de inativação.
 - `ModuleActionNav.jsx`: navegação interna do módulo.
 - `Header.jsx`: cabeçalho dinâmico.
 - `Sidebar.jsx`: menu lateral.
