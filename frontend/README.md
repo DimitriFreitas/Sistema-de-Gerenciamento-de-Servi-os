@@ -1,152 +1,110 @@
-# Guia do Frontend
+# Frontend
 
-Esta pasta contém o frontend em React + Vite do projeto. No estado atual, ela concentra a interface dos módulos de `Clientes` e `Produtos`, com navegação responsiva e fluxos CRUD integrados à API do backend.
+Interface web do Sistema de Gerenciamento de Serviços. Esta pasta concentra a aplicação React responsável pelos módulos de clientes e produtos.
 
-Hoje, o frontend já cobre o fluxo principal da aplicação:
-
-- layout, rotas e navegação já foram implementados
-- telas de CRUD de `Clientes` e `Produtos` já existem
-- listagem, cadastro, edição e inativação/remover usam chamadas HTTP
-- filtros, ordenação de colunas e painel lateral funcionam sobre os dados retornados pela API
-
-## Stack utilizada
+## Stack
 
 - React 19
-- Vite 8
+- React DOM 19
 - React Router DOM 7
+- Vite 8
 - ESLint 9
 
-## Pré-requisitos
+## Responsabilidade
 
-- Node.js 20+ recomendado
-- npm disponível no terminal
+O frontend oferece uma interface navegável para:
 
-## Como iniciar
+- abrir o painel inicial do sistema;
+- acessar os módulos de clientes e produtos;
+- consultar registros vindos do backend;
+- filtrar e ordenar listagens;
+- visualizar detalhes do item selecionado;
+- cadastrar novos clientes e produtos;
+- editar registros existentes;
+- inativar clientes;
+- remover produtos pelo fluxo de inativação do módulo.
 
-A partir da raiz do repositório:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-O Vite vai iniciar o servidor local de desenvolvimento e mostrar a URL no terminal, normalmente `http://localhost:5173`.
-
-## Scripts disponíveis
-
-Execute os comandos abaixo dentro de `frontend/`.
-
-### `npm run dev`
-
-Inicia o servidor de desenvolvimento com hot reload.
-
-### `npm run build`
-
-Gera a versão de produção em `frontend/dist/`.
-
-### `npm run preview`
-
-Serve localmente a build de produção após `npm run build`.
-
-### `npm run lint`
-
-Executa o ESLint em todo o código do frontend.
-
-## Estrutura da pasta
+## Estrutura
 
 ```text
 frontend/
-├── public/                 # Arquivos estáticos usados pelo Vite
+├── public/                 # Arquivos estáticos servidos pelo Vite
 ├── src/
-│   ├── components/         # Blocos reutilizáveis e páginas CRUD genéricas
-│   ├── config/             # Metadados de navegação e rotas
-│   ├── data/               # Configuração dos módulos ativos
-│   ├── layouts/            # Layout principal da aplicação
-│   ├── lib/                # Cliente HTTP usado para acessar a API
-│   ├── pages/              # Página inicial usada pelas rotas
-│   ├── routes/             # Definição do roteamento
+│   ├── components/         # Componentes reutilizáveis e telas CRUD genéricas
+│   ├── config/             # Metadados de navegação
+│   ├── data/               # Configuração dos módulos de clientes e produtos
+│   ├── layouts/            # Estrutura principal da aplicação
+│   ├── lib/                # Cliente HTTP para comunicação com a API
+│   ├── pages/              # Página inicial
+│   ├── routes/             # Rotas da aplicação
 │   ├── App.jsx             # Componente principal
-│   ├── main.jsx            # Bootstrap do React
-│   └── styles.css          # Estilos globais da aplicação
-├── index.html              # Entrada HTML do Vite
-├── package.json
-└── README.md
+│   ├── main.jsx            # Entrada do React
+│   └── styles.css          # Estilos globais
+├── index.html              # HTML base do Vite
+├── package.json            # Dependências e scripts
+└── vite.config.js          # Configuração do Vite e proxy da API
 ```
 
-## Como o frontend está organizado
+## Fluxo da aplicação
 
-### Fluxo de entrada
+1. `src/main.jsx` renderiza a aplicação no `index.html`.
+2. `src/App.jsx` carrega as rotas principais.
+3. `src/routes/AppRoutes.jsx` define as telas disponíveis.
+4. `src/layouts/MainLayout.jsx` organiza sidebar, cabeçalho e área de conteúdo.
+5. Os componentes CRUD recebem as configurações de `src/data/moduleConfigs.js`.
+6. As chamadas HTTP são centralizadas em `src/lib/api.js`.
 
-A aplicação começa nestes arquivos:
+## Organização dos módulos
 
-- `src/main.jsx`: monta o React no DOM
-- `src/App.jsx`: carrega o roteador principal
-- `src/routes/AppRoutes.jsx`: define todas as rotas do frontend
+O arquivo `src/data/moduleConfigs.js` centraliza o comportamento visual e funcional de clientes e produtos:
 
-### Layout
+- textos de navegação;
+- caminhos das rotas;
+- filtros;
+- colunas das tabelas;
+- campos dos formulários;
+- montagem dos dados enviados para a API;
+- mensagens de sucesso;
+- dados exibidos nos painéis laterais.
 
-O shell principal da aplicação está em:
+Esse padrão permite reaproveitar os mesmos componentes CRUD para módulos diferentes.
 
-- `src/layouts/MainLayout.jsx`
-- `src/components/Header.jsx`
-- `src/components/Sidebar.jsx`
-- `src/config/navigation.js`
+## Componentes principais
 
-Essa camada cuida de:
+- `CrudModulePage.jsx`: tela inicial de um módulo.
+- `CrudListPage.jsx`: listagem com filtros, ordenação e painel de detalhes.
+- `CrudFormPage.jsx`: cadastro e edição.
+- `CrudDeactivatePage.jsx`: confirmação de inativação ou remoção.
+- `ModuleActionNav.jsx`: navegação interna do módulo.
+- `Header.jsx`: cabeçalho dinâmico.
+- `Sidebar.jsx`: menu lateral.
 
-- comportamento responsivo da sidebar
-- títulos e descrições dinâmicas no cabeçalho, conforme a rota
-- navegação principal entre os módulos
+## Comunicação com o backend
 
-### Configuração dos módulos
+O frontend chama a API usando `src/lib/api.js`.
 
-O comportamento dos módulos ativos está centralizado em:
+Por padrão, a base da API é `/api`. Em desenvolvimento, o `vite.config.js` encaminha essas requisições para:
 
-- `src/data/moduleConfigs.js`
+```text
+http://localhost:3000
+```
 
-Esse arquivo é a fonte principal para:
+Exemplo do fluxo:
 
-- módulos ativos
-- labels e descrições das rotas
-- textos dos botões
-- filtros e colunas das tabelas
-- campos dos formulários
-- painéis laterais de detalhes
-- fluxo visual de inativação
+```text
+Frontend chama /api/clientes
+Vite redireciona para http://localhost:3000/clientes
+Backend responde com JSON
+Tela atualiza a listagem
+```
 
-Se o objetivo for alterar o conteúdo visual de `Clientes` ou `Produtos`, esse é o primeiro arquivo a revisar.
+Se necessário, a base pode ser alterada com a variável:
 
-### Comunicação com a API
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
 
-As chamadas para o backend estão centralizadas em:
-
-- `src/lib/api.js`
-
-Esse arquivo monta a URL base da API, interpreta as respostas JSON e expõe funções reutilizáveis para:
-
-- listar registros
-- criar registros
-- atualizar registros
-- remover registros
-
-Por padrão, o frontend usa `/api` como base. Em desenvolvimento, o `vite.config.js` redireciona essas chamadas para `http://localhost:3000`.
-
-### Telas CRUD reutilizáveis
-
-As páginas dos módulos foram montadas com componentes genéricos:
-
-- `CrudModulePage.jsx`: página inicial do módulo
-- `CrudListPage.jsx`: tela de listagem com painel lateral
-- `CrudFormPage.jsx`: tela base de cadastro e edição
-- `CrudDeactivatePage.jsx`: tela de confirmação de inativação
-- `ModuleActionNav.jsx`: navegação interna do módulo
-
-Isso permite manter consistência visual entre `Clientes` e `Produtos`.
-
-## Rotas ativas
-
-O roteamento atual expõe estes caminhos principais:
+## Rotas
 
 ### Início
 
@@ -170,125 +128,79 @@ O roteamento atual expõe estes caminhos principais:
 
 Rotas desconhecidas redirecionam para `/`.
 
-## Comportamento atual
+## Como instalar
 
-Hoje o frontend funciona como uma interface CRUD integrada aos endpoints de `Clientes` e `Produtos`.
+Dentro de `frontend/`:
 
-O que já funciona:
+```bash
+npm install
+```
 
-- layout responsivo
-- navegação lateral e cabeçalho dinâmico
-- transição entre telas por rota
-- estrutura CRUD de `Clientes` e `Produtos`
-- listagem com filtros e ordenação por coluna
-- formulários de cadastro e edição enviados ao backend
-- inativação de cliente por alteração de status
-- remoção de produto pelo fluxo de inativação do módulo
-- estados de carregamento, sucesso e erro nas chamadas principais
+Ou a partir da raiz:
 
-Pontos que ainda podem evoluir:
+```bash
+npm --prefix frontend install
+```
 
-- validações mais completas no frontend antes do envio
-- autenticação e autorização de usuários
-- paginação para listas maiores
-- testes automatizados de interface
+## Como rodar
 
-## Como alterar a interface
+Dentro de `frontend/`:
 
-### Alterar textos e conteúdo dos módulos
+```bash
+npm run dev
+```
 
-Edite:
+Ou a partir da raiz:
 
-- `src/data/moduleConfigs.js`
+```bash
+npm --prefix frontend run dev
+```
 
-Use esse arquivo para alterar:
+O Vite normalmente disponibiliza a aplicação em:
 
-- labels
-- descrições
-- filtros e colunas das listagens
-- campos dos formulários
-- textos de ações e botões
+```text
+http://127.0.0.1:5173
+```
 
-### Alterar a navegação global
+## Scripts
 
-Edite:
+- `npm run dev`: inicia o servidor de desenvolvimento.
+- `npm run build`: gera a build de produção em `dist/`.
+- `npm run preview`: serve a build de produção localmente.
+- `npm run lint`: executa o ESLint.
 
-- `src/config/navigation.js`
-- `src/components/Sidebar.jsx`
-- `src/components/Header.jsx`
+## Como alterar conteúdo das telas
 
-### Alterar layout e comportamento da estrutura principal
+Para alterar textos, campos, filtros, colunas ou regras de montagem de payload, comece por:
 
-Edite:
+```text
+src/data/moduleConfigs.js
+```
 
-- `src/layouts/MainLayout.jsx`
-- `src/styles.css`
+Para alterar estrutura visual reutilizável, use:
 
-### Alterar o visual da aplicação
+```text
+src/components/
+```
 
-Grande parte da aparência está concentrada em:
+Para alterar cores, espaçamentos, tabelas, cards e responsividade, use:
 
-- `src/styles.css`
+```text
+src/styles.css
+```
 
-Esse arquivo define:
+## Validação recomendada
 
-- grids de layout
-- botões
-- cards
-- tabelas
-- breakpoints responsivos
-- cores e variáveis visuais em `:root`
+Antes de enviar mudanças:
 
-## Como adicionar um novo módulo
+```bash
+npm run lint
+npm run build
+```
 
-Para adicionar um novo módulo seguindo o padrão atual:
+Ou a partir da raiz:
 
-1. Adicione um novo objeto dentro de `src/data/moduleConfigs.js`.
-2. Defina `basePath`, `routeMeta`, `actions` e as configurações de `list`, `create`, `edit` e `deactivate`.
-3. Inclua esse módulo em `orderedModules` caso ele deva aparecer na navegação.
-4. Registre as novas rotas em `src/routes/AppRoutes.jsx`.
-5. Ajuste `src/config/navigation.js` se o módulo precisar aparecer no menu principal.
-
-A estrutura atual é orientada por configuração, então o ideal é reutilizar os componentes CRUD existentes em vez de duplicar páginas novas do zero.
-
-## Como a integração com o backend funciona
-
-O frontend consome os endpoints definidos em `moduleConfigs.js` por meio de `src/lib/api.js`.
-
-O fluxo geral é:
-
-1. A rota carrega um componente CRUD genérico.
-2. O componente recebe a configuração do módulo (`Clientes` ou `Produtos`).
-3. A configuração informa qual recurso da API deve ser usado.
-4. O `api.js` executa a chamada HTTP.
-5. A tela atualiza a lista, o formulário ou o painel lateral conforme a resposta.
-
-No ambiente de desenvolvimento, o proxy do Vite permite que o frontend chame `/api/...` e o Vite encaminhe a requisição para o backend em `http://localhost:3000`.
-
-## Observações sobre páginas
-
-- `src/pages/Home.jsx`
-- os componentes CRUD reutilizáveis dentro de `src/components/`
-
-No fluxo roteado atual, `Home.jsx` é a página inicial. As telas de clientes e produtos são montadas pelos componentes CRUD reutilizáveis, não por páginas separadas em `src/pages/`.
-
-## Fluxo de trabalho recomendado
-
-Para desenvolvimento normal do frontend:
-
-1. Rode `npm run dev`.
-2. Se a mudança for de conteúdo, ajuste primeiro `src/data/moduleConfigs.js`.
-3. Se a mudança for estrutural ou visual, ajuste `src/components/`, `src/layouts/`, `src/config/` ou `src/styles.css`.
-4. Rode `npm run lint`.
-5. Rode `npm run build` antes de subir alterações.
-
-## Escopo atual do frontend
-
-Hoje esta pasta representa:
-
-- um shell responsivo de aplicação
-- fluxos visuais da Sprint 1 para `Clientes`
-- fluxos visuais da Sprint 1 para `Produtos`
-- integração básica com o backend para CRUD de `Clientes` e `Produtos`
-
-Ela ainda não representa um frontend totalmente finalizado para produção, mas já cobre o fluxo funcional principal dos módulos apresentados.
+```bash
+npm --prefix frontend run lint
+npm --prefix frontend run build
+```
